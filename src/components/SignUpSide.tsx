@@ -10,6 +10,7 @@ import LockOutlinedIcon from '@mui/icons-material/LockOutlined';
 import Typography from '@mui/material/Typography';
 import { AuthContext } from './auth/AuthProvider';
 import { makeCredentialOptions, parseCredentialCreattionOptions, registerNewCredential } from '../utils/register';
+import { enqueueSnackbar } from 'notistack';
 
 function Copyright(props: any) {
   return (
@@ -49,19 +50,13 @@ export default function SignUpSide() {
       var msg = "Could not create credentials in browser. Probably because the username is already registered with your authenticator. Please change username or authenticator."
       console.error(msg, e);
       //showErrorAlert(msg, e);
+      enqueueSnackbar("Could not create credentials in browser.", { variant: 'error' })
     }
 
-
-    console.log("PublicKeyCredential Created", newCredential);
-
-    try {
-      const token = await registerNewCredential(newCredential as PublicKeyCredential);
-      if (token !== undefined && token !== null && token.length > 0) {
-        ctx.handleSignIn(token, false)
-      }
-    } catch (e) {
-      // showErrorAlert(err.message ? err.message : err);
-      console.log(e)
+    const token = await registerNewCredential(newCredential as PublicKeyCredential);
+    if (token !== undefined && token !== null && token.length > 0) {
+      enqueueSnackbar(`Public-Key-Credential created.`, { variant: 'success' })
+      ctx.handleSignIn(token, false)
     }
   }
 

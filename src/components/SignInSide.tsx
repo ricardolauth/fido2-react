@@ -11,7 +11,8 @@ import Typography from '@mui/material/Typography';
 import { AuthContext } from './auth/AuthProvider';
 import { isConditionalMediationAvailable } from '../utils/helpers';
 import { getAssertionOptions, parseAssertionOptions, parseAssertionResponse, postAssertedCredential } from '../utils/login';
-import { useEffect } from 'react';
+import { useEffect, useState } from 'react';
+import { enqueueSnackbar } from 'notistack';
 
 function Copyright(props: any) {
     return (
@@ -28,8 +29,13 @@ function Copyright(props: any) {
 
 export default function SignInSide() {
     // if the user don't want to use the conditional approach, we use this controller to abort the webauthn api call
-    const abortController = new AbortController()
+    const [abortController, setAbortController] = useState(new AbortController())
     const ctx = React.useContext(AuthContext)
+
+    // after every abort a new controller must be instantiated
+    const reset = () => {
+        setAbortController(new AbortController())
+    }
 
     const handleSubmit = async (event: React.FormEvent<HTMLFormElement>) => {
         event.preventDefault();
@@ -42,29 +48,42 @@ export default function SignInSide() {
             let requestOptions = await getAssertionOptions(username);
 
             if (!requestOptions) {
-                console.log("requestOptions", requestOptions)
+                reset()
                 return;
             }
 
-            const credential = await navigator.credentials.get({
-                publicKey: await parseAssertionOptions(requestOptions)
-            });
+            let credential;
+            try {
+                credential = await navigator.credentials.get({
+                    publicKey: await parseAssertionOptions(requestOptions)
+                });
+            } catch (e) {
+                enqueueSnackbar("Something went wrong while looking up your passkey", { variant: 'error' })
+                reset()
+                return;
+            }
+
 
             if (credential == null) {
-                console.error("credential is null")
-                return
+                enqueueSnackbar("Could not find the credential on your device", { variant: 'error' })
+                reset()
+                return;
             }
 
             const token = await postAssertedCredential(parseAssertionResponse(credential as PublicKeyCredential))
             if (!token) {
-                console.error("token is null")
+                enqueueSnackbar("Could not retrive a valid token", { variant: 'error' })
+                reset()
                 return;
             }
 
+            enqueueSnackbar("open sesame!", { variant: 'success' })
             ctx.handleSignIn(token, false)
 
+
         } catch (error) {
-            console.log(error);
+            console.error(error);
+            reset()
         }
     }
 
@@ -84,34 +103,41 @@ export default function SignInSide() {
                     return;
                 }
 
-                const credential = await navigator.credentials.get({
-                    publicKey: await parseAssertionOptions(requestOptions),
-                    mediation: "conditional",
-                    signal: abortController.signal
-                });
+                let credential;
+                try {
+                    credential = await navigator.credentials.get({
+                        publicKey: await parseAssertionOptions(requestOptions),
+                        mediation: "conditional",
+                        signal: abortController.signal
+                    });
+                } catch (e) {
+                    return;
+                }
+
 
                 if (credential == null) {
-                    console.error("credential is null")
-                    return
+                    enqueueSnackbar("Could not find the credential on your device", { variant: 'error' })
+                    return;
                 }
 
                 const token = await postAssertedCredential(parseAssertionResponse(credential as PublicKeyCredential))
                 if (!token) {
-                    console.error("token is null")
+                    enqueueSnackbar("Could not retrive a valid token", { variant: 'error' })
                     return;
                 }
 
+                enqueueSnackbar("open sesame!", { variant: 'success' })
                 ctx.handleSignIn(token, false)
 
             } catch (error) {
-                console.log(error);
+                enqueueSnackbar("Something went wrong!", { variant: 'error' })
             }
         }
 
         handleConditional()
             .then(() => console.log("success"))
             .catch(e => console.log(e))
-    }, [])
+    }, [abortController])
 
     return (
         <>

@@ -5,6 +5,7 @@ import Unauthorized from './components/auth/Unauthorized'
 import SignUpSide from './components/SignUpSide'
 import Authorized from './components/auth/Authorized'
 import SignInSide from './components/SignInSide'
+import { SnackbarProvider } from 'notistack'
 
 function App() {
   const defaultTheme = createTheme();
@@ -12,6 +13,7 @@ function App() {
   return (
     <>
       <ThemeProvider theme={defaultTheme}>
+        <SnackbarProvider />
         <AuthProvider>
           <Grid container component="main" sx={{ height: '100vh', width: '100vw' }}>
             <CssBaseline />

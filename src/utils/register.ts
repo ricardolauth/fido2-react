@@ -1,4 +1,5 @@
-﻿import { AuthService, CredentialCreateOptions, PublicKeyCredentialType, User } from "../api";
+﻿import { enqueueSnackbar } from "notistack";
+import { ApiError, AuthService, CredentialCreateOptions, PublicKeyCredentialType, User } from "../api";
 import { coerceToArrayBuffer, coerceToBase64Url } from "./helpers";
 
 export const makeCredentialOptions = async (user?: Pick<User, 'username' | 'displayName'>) => {
@@ -6,15 +7,13 @@ export const makeCredentialOptions = async (user?: Pick<User, 'username' | 'disp
     try {
         makeCredentialOptions = await AuthService.createPublicKeyCredentialCreationOptions(user)
     } catch (e) {
-        console.error(e);
-        //showErrorAlert(msg);
+        const error = e as ApiError
+        enqueueSnackbar(`API: ${error.url} throws ${error.message}`, { variant: 'error' })
         return;
     }
 
     if (makeCredentialOptions.status !== "ok") {
-        console.log("Error creating credential options");
-        console.log(makeCredentialOptions.errorMessage);
-        //showErrorAlert(makeCredentialOptions.errorMessage);
+        enqueueSnackbar(`Error while creating credential options: ${makeCredentialOptions.errorMessage}`, { variant: 'error' })
         return;
     }
 
@@ -53,13 +52,12 @@ export async function registerNewCredential(newCredential: PublicKeyCredential) 
         }
     };
 
-    console.log(data)
-
     let response;
     try {
         response = await AuthService.createCredential(data)
     } catch (e) {
-        console.log(e)
+        const error = e as ApiError
+        enqueueSnackbar(`API: ${error.url} returns ${error.message}`, { variant: 'error' })
     }
 
     return response

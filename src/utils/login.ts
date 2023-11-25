@@ -1,4 +1,5 @@
-﻿import { ApiError, AssertionOptions, AuthService, AuthenticatorAssertionRawResponse, PublicKeyCredentialType } from "../api";
+﻿import { enqueueSnackbar } from "notistack";
+import { ApiError, AssertionOptions, AuthService, AuthenticatorAssertionRawResponse, PublicKeyCredentialType } from "../api";
 import { PickNotNullable, coerceToArrayBuffer, coerceToBase64Url } from "./helpers";
 
 
@@ -7,19 +8,14 @@ export const getAssertionOptions = async (username?: string) => {
     try {
         makeAssertionOptions = await AuthService.getApiAuthAssertionOptions(username)
     } catch (e) {
-        //showErrorAlert("Request to server failed", e);
         const error = e as ApiError
-        console.log(error.message)
+        enqueueSnackbar(`API: ${error.url} throws ${error.message}`, { variant: 'error' })
         return;
     }
 
-    console.log("Assertion Options Object", makeAssertionOptions);
-
     // show options error to user
     if (makeAssertionOptions.status !== "ok") {
-        console.log("Error creating assertion options");
-        console.log(makeAssertionOptions.errorMessage);
-        //showErrorAlert(makeAssertionOptions.errorMessage);
+        enqueueSnackbar(`Error while creating credential options: ${makeAssertionOptions.errorMessage}`, { variant: 'error' })
         return;
     }
 
@@ -73,7 +69,8 @@ export const postAssertedCredential = async (assertionRawResponse: Authenticator
     try {
         token = await AuthService.postApiAuthAssertion(assertionRawResponse)
     } catch (e) {
-        console.error(e)
+        const error = e as ApiError
+        enqueueSnackbar(`API: ${error.url} returns ${error.message}`, { variant: 'error' })
         return;
     }
 
