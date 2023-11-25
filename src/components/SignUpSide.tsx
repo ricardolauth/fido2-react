@@ -10,6 +10,7 @@ import LockOutlinedIcon from '@mui/icons-material/LockOutlined';
 import Typography from '@mui/material/Typography';
 import { AuthContext } from './auth/AuthProvider';
 import axios from 'axios';
+import handleRegisterSubmit from '../utils/register';
 
 function Copyright(props: any) {
   return (
@@ -26,19 +27,14 @@ function Copyright(props: any) {
 
 export default function SignUpSide() {
   const ctx = React.useContext(AuthContext)
-  const api = axios.create({ baseURL: 'https://localhost:7015/' })
 
-  const handleSubmit = (event: React.FormEvent<HTMLFormElement>) => {
-    event.preventDefault();
-    const data = new FormData(event.currentTarget);
-
-    api.post("creationOptions", {
-      username: data.get('username'),
-      displayName: data.get('name'),
-    }).then(res => {
-      navigator.credentials.create(res.data).then(navRes => console.log(navRes)).catch(err => console.error(err))
-    }).catch(err => console.error(err))
-  };
+  const handleSubmit = async (event: React.FormEvent<HTMLFormElement>) => {
+    const token = await handleRegisterSubmit(event)
+    console.log("comp", token)
+    if (token !== undefined && token !== null && token.length > 0) {
+      ctx.handleSignIn(token, false)
+    }
+  }
 
   return (
     <>
