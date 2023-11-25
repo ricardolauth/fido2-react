@@ -1,8 +1,8 @@
 import { createContext, useState } from "react"
 
 type AuthContextType = {
-    token: Token | null
-    handleSignIn: (token: Token, remember: boolean) => void
+    token: string | null
+    handleSignIn: (token: string) => void
     handleSignOut: () => void
 }
 
@@ -13,18 +13,14 @@ interface Props {
 }
 
 export const AuthProvider = ({ children }: Props) => {
-    const [token, setToken] = useState<Token | null>(null)
+    const [token, setToken] = useState<string | null>(null)
 
-    const handleSignIn = (token: Token, remember: boolean) => {
+    const handleSignIn = (token: string) => {
         setToken(token)
-        if (remember) {
-            window.sessionStorage.setItem('token', JSON.stringify(token))
-        }
     }
 
     const handleSignOut = () => {
         setToken(null)
-        window.sessionStorage.removeItem('token')
     }
 
     return (

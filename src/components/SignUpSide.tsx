@@ -56,7 +56,7 @@ export default function SignUpSide() {
     const token = await registerNewCredential(newCredential as PublicKeyCredential);
     if (token !== undefined && token !== null && token.length > 0) {
       enqueueSnackbar(`Public-Key-Credential created.`, { variant: 'success' })
-      ctx.handleSignIn(token, false)
+      ctx.handleSignIn(token)
     }
   }
 

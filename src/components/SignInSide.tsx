@@ -78,7 +78,7 @@ export default function SignInSide() {
             }
 
             enqueueSnackbar("open sesame!", { variant: 'success' })
-            ctx.handleSignIn(token, false)
+            ctx.handleSignIn(token)
 
 
         } catch (error) {
@@ -127,7 +127,7 @@ export default function SignInSide() {
                 }
 
                 enqueueSnackbar("open sesame!", { variant: 'success' })
-                ctx.handleSignIn(token, false)
+                ctx.handleSignIn(token)
 
             } catch (error) {
                 enqueueSnackbar("Something went wrong!", { variant: 'error' })

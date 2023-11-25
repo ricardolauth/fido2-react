@@ -30,4 +30,4 @@ export type { User } from './models/User';
 export { UserVerificationRequirement } from './models/UserVerificationRequirement';
 
 export { AuthService } from './services/AuthService';
-export { HomeService } from './services/HomeService';
+export { MeService } from './services/MeService';

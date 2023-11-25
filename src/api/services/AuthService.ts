@@ -79,20 +79,4 @@ requestBody?: AuthenticatorAssertionRawResponse,
         });
     }
 
-    /**
-     * @param requestBody 
-     * @returns string Success
-     * @throws ApiError
-     */
-    public static postApiAuthTesttoken(
-requestBody?: User,
-): CancelablePromise<string> {
-        return __request(OpenAPI, {
-            method: 'POST',
-            url: '/api/auth/testtoken',
-            body: requestBody,
-            mediaType: 'application/json',
-        });
-    }
-
 }
