@@ -9,8 +9,7 @@ import Grid from '@mui/material/Grid';
 import LockOutlinedIcon from '@mui/icons-material/LockOutlined';
 import Typography from '@mui/material/Typography';
 import { AuthContext } from './auth/AuthProvider';
-import axios from 'axios';
-import handleRegisterSubmit from '../utils/register';
+import { makeCredentialOptions, parseCredentialCreattionOptions, registerNewCredential } from '../utils/register';
 
 function Copyright(props: any) {
   return (
@@ -28,11 +27,41 @@ function Copyright(props: any) {
 export default function SignUpSide() {
   const ctx = React.useContext(AuthContext)
 
-  const handleSubmit = async (event: React.FormEvent<HTMLFormElement>) => {
-    const token = await handleRegisterSubmit(event)
-    console.log("comp", token)
-    if (token !== undefined && token !== null && token.length > 0) {
-      ctx.handleSignIn(token, false)
+  async function handleRegisterSubmit(event: React.FormEvent<HTMLFormElement>) {
+    event.preventDefault();
+    const data = new FormData(event.currentTarget);
+
+    // send to server for registering
+    const user = { displayName: data.get('name')?.toString(), username: data.get('username')?.toString() }
+
+
+    const credentialCreationOptions = await makeCredentialOptions(user)
+    if (!credentialCreationOptions) {
+      return
+    }
+
+    let newCredential;
+    try {
+      newCredential = await navigator.credentials.create({
+        publicKey: parseCredentialCreattionOptions(credentialCreationOptions)
+      });
+    } catch (e) {
+      var msg = "Could not create credentials in browser. Probably because the username is already registered with your authenticator. Please change username or authenticator."
+      console.error(msg, e);
+      //showErrorAlert(msg, e);
+    }
+
+
+    console.log("PublicKeyCredential Created", newCredential);
+
+    try {
+      const token = await registerNewCredential(newCredential as PublicKeyCredential);
+      if (token !== undefined && token !== null && token.length > 0) {
+        ctx.handleSignIn(token, false)
+      }
+    } catch (e) {
+      // showErrorAlert(err.message ? err.message : err);
+      console.log(e)
     }
   }
 
@@ -69,7 +98,7 @@ export default function SignUpSide() {
           <Typography component="h1" variant="h5">
             Sign up
           </Typography>
-          <Box component="form" noValidate onSubmit={handleSubmit} sx={{ mt: 1 }}>
+          <Box component="form" noValidate onSubmit={handleRegisterSubmit} sx={{ mt: 1 }}>
             <TextField
               margin="normal"
               required

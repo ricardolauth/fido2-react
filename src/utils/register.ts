@@ -1,25 +1,15 @@
-﻿import { AuthService, AuthenticatorAttestationRawResponse, CredentialCreateOptions, PublicKeyCredentialType, ResponseData } from "../api";
+﻿import { AuthService, CredentialCreateOptions, PublicKeyCredentialType, User } from "../api";
 import { coerceToArrayBuffer, coerceToBase64Url } from "./helpers";
 
-async function handleRegisterSubmit(event: React.FormEvent<HTMLFormElement>) {
-    event.preventDefault();
-    const data = new FormData(event.currentTarget);
-
-    // send to server for registering
+export const makeCredentialOptions = async (user?: Pick<User, 'username' | 'displayName'>) => {
     let makeCredentialOptions: CredentialCreateOptions;
     try {
-        makeCredentialOptions = await AuthService.createPublicKeyCredentialCreationOptions(
-            { displayName: data.get('name')?.toString(), username: data.get('username')?.toString() })
-
+        makeCredentialOptions = await AuthService.createPublicKeyCredentialCreationOptions(user)
     } catch (e) {
         console.error(e);
-        let msg = "Something wen't really wrong";
         //showErrorAlert(msg);
         return;
     }
-
-
-    console.log("Credential Options Object", makeCredentialOptions);
 
     if (makeCredentialOptions.status !== "ok") {
         console.log("Error creating credential options");
@@ -28,62 +18,28 @@ async function handleRegisterSubmit(event: React.FormEvent<HTMLFormElement>) {
         return;
     }
 
-
-    let credentialCreationOptions: any = { ...makeCredentialOptions };
-    // Turn the challenge back into the accepted format of padded base64
-    credentialCreationOptions.challenge = coerceToArrayBuffer(makeCredentialOptions.challenge, 'challenge');
-    // Turn ID into a UInt8Array Buffer for some reason
-    credentialCreationOptions.user.id = coerceToArrayBuffer(makeCredentialOptions.user!.id, 'user.id');
-
-    credentialCreationOptions.excludeCredentials = credentialCreationOptions.excludeCredentials.map((c: PublicKeyCredentialDescriptor) => {
-        c.id = coerceToArrayBuffer(c.id, 'PublicKeyCredentialDescriptor.id');
-        return c;
-    });
-
-
-
-    credentialCreationOptions.pubKeyCredParams = makeCredentialOptions.pubKeyCredParams?.map((c) => {
-        c.type = PublicKeyCredentialType.PUBLIC_KEY; // this is always public key 
-        return c;
-    });
-
-    if (credentialCreationOptions.authenticatorSelection.authenticatorAttachment === null) {
-        credentialCreationOptions.authenticatorSelection.authenticatorAttachment = undefined;
-    }
-
-    console.log("Credential Options Formatted", credentialCreationOptions);
-
-    let newCredential;
-    try {
-        newCredential = await navigator.credentials.create({
-            publicKey: credentialCreationOptions
-        });
-    } catch (e) {
-        var msg = "Could not create credentials in browser. Probably because the username is already registered with your authenticator. Please change username or authenticator."
-        console.error(msg, e);
-        //showErrorAlert(msg, e);
-    }
-
-
-    console.log("PublicKeyCredential Created", newCredential);
-
-    try {
-        const result = await registerNewCredential(newCredential as PublicKeyCredential);
-        console.log("handleSUbmit", result)
-        return result
-    } catch (e) {
-        // showErrorAlert(err.message ? err.message : err);
-        console.log(e)
-    }
+    return makeCredentialOptions
 }
 
+export const parseCredentialCreattionOptions = (options: CredentialCreateOptions): PublicKeyCredentialCreationOptions => {
+    const data: any = {
+        ...options,
+        challenge: coerceToArrayBuffer(options.challenge, 'challenge'),
+        user: { id: coerceToArrayBuffer(options.user!.id, 'user.id'), displayName: options.user!.displayName!, name: options.user!.name! },
+        excludeCredentials: options.excludeCredentials?.map(c => { return { id: coerceToArrayBuffer(c.id!, 'excludeCredentials.id'), type: PublicKeyCredentialType.PUBLIC_KEY, transports: c.transports == null ? undefined : c.transports } }),
+        extensions: undefined,
+        authenticatorSelection: { ...options.authenticatorSelection, authenticatorAttachment: options.authenticatorSelection?.authenticatorAttachment == null ? undefined : options.authenticatorSelection?.authenticatorAttachment }
+    }
 
+    return data
+}
 
 // This should be used to verify the auth data with the server
-async function registerNewCredential(newCredential: any) {
+export async function registerNewCredential(newCredential: PublicKeyCredential) {
     // Move data into Arrays incase it is super long
-    let attestationObject = new Uint8Array(newCredential.response.attestationObject);
-    let clientDataJSON = new Uint8Array(newCredential.response.clientDataJSON);
+    const attestationResponse = newCredential.response as AuthenticatorAttestationResponse
+    let attestationObject = new Uint8Array(attestationResponse.attestationObject);
+    let clientDataJSON = new Uint8Array(attestationResponse.clientDataJSON);
     let rawId = new Uint8Array(newCredential.rawId);
 
     const data = {
@@ -102,17 +58,9 @@ async function registerNewCredential(newCredential: any) {
     let response;
     try {
         response = await AuthService.createCredential(data)
-        console.log("regist", response)
     } catch (e) {
         console.log(e)
-        //showErrorAlert(e);
     }
 
-    // show success 
-
-    // redirect to dashboard?
-    //window.location.href = "/dashboard/" + state.user.displayName;
     return response
 }
-
-export default handleRegisterSubmit

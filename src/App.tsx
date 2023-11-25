@@ -16,8 +16,6 @@ function App() {
           <Grid container component="main" sx={{ height: '100vh', width: '100vw' }}>
             <CssBaseline />
             <Unauthorized>
-              {// <SignUpSide />
-              }
               <SignInSide />
             </Unauthorized>
             <Authorized>
