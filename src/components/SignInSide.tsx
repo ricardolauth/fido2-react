@@ -29,17 +29,14 @@ function Copyright(props: any) {
 
 export default function SignInSide() {
     // if the user don't want to use the conditional approach, we use this controller to abort the webauthn api call
-    const [abortController, setAbortController] = useState(new AbortController())
+    const [abortController, setAbortController] = useState<AbortController | undefined>()
+    const [isOngoing, setIsOnGoing] = useState(false)
     const ctx = React.useContext(AuthContext)
-
-    // after every abort a new controller must be instantiated
-    const reset = () => {
-        setAbortController(new AbortController())
-    }
 
     const handleSubmit = async (event: React.FormEvent<HTMLFormElement>) => {
         event.preventDefault();
-        abortController.abort("Modal Flow is used");
+        if (abortController)
+            abortController.abort("Modal Flow is used");
 
         const data = new FormData(event.currentTarget);
 
@@ -48,7 +45,6 @@ export default function SignInSide() {
             let requestOptions = await getAssertionOptions(username);
 
             if (!requestOptions) {
-                reset()
                 return;
             }
 
@@ -59,21 +55,18 @@ export default function SignInSide() {
                 });
             } catch (e) {
                 enqueueSnackbar("Something went wrong while looking up your passkey", { variant: 'error' })
-                reset()
                 return;
             }
 
 
             if (credential == null) {
                 enqueueSnackbar("Could not find the credential on your device", { variant: 'error' })
-                reset()
                 return;
             }
 
             const token = await postAssertedCredential(parseAssertionResponse(credential as PublicKeyCredential))
             if (!token) {
                 enqueueSnackbar("Could not retrive a valid token", { variant: 'error' })
-                reset()
                 return;
             }
 
@@ -83,60 +76,56 @@ export default function SignInSide() {
 
         } catch (error) {
             console.error(error);
-            reset()
         }
     }
 
-
-
-    useEffect(() => {
-        const handleConditional = async () => {
-            const isConditionalAvailable = await isConditionalMediationAvailable()
-            if (!isConditionalAvailable) {
-                return;
-            }
-
-            try {
-                let requestOptions = await getAssertionOptions();
-
-                if (!requestOptions) {
-                    return;
-                }
-
-                let credential;
-                try {
-                    credential = await navigator.credentials.get({
-                        publicKey: await parseAssertionOptions(requestOptions),
-                        mediation: "conditional",
-                        signal: abortController.signal
-                    });
-                } catch (e) {
-                    return;
-                }
-
-
-                if (credential == null) {
-                    enqueueSnackbar("Could not find the credential on your device", { variant: 'error' })
-                    return;
-                }
-
-                const token = await postAssertedCredential(parseAssertionResponse(credential as PublicKeyCredential))
-                if (!token) {
-                    enqueueSnackbar("Could not retrive a valid token", { variant: 'error' })
-                    return;
-                }
-
-                enqueueSnackbar("open sesame!", { variant: 'success' })
-                ctx.handleSignIn(token)
-
-            } catch (error) {
-                enqueueSnackbar("Something went wrong!", { variant: 'error' })
-            }
+    const handleConditional = async () => {
+        const isConditionalAvailable = await isConditionalMediationAvailable()
+        if (!isConditionalAvailable) {
+            return;
         }
 
-        handleConditional()
-            .then(() => console.log("success"))
-            .catch(e => console.log(e))
+        if (abortController) return
+
+        const requestOptions = await getAssertionOptions()
+        if (!requestOptions) {
+            return
+        }
+
+        const controller = new AbortController()
+        setAbortController(controller)
+        // this is a blocking call: see webauthn spec
+        let credential
+        try {
+            credential = await navigator.credentials.get({
+                publicKey: await parseAssertionOptions(requestOptions),
+                mediation: "conditional",
+                signal: controller.signal
+            });
+        } finally {
+            setAbortController(undefined)
+        }
+
+        if (credential == null) {
+            enqueueSnackbar("Could not find the credential on your device", { variant: 'error' })
+            return
+        }
+
+        const token = await postAssertedCredential(parseAssertionResponse(credential as PublicKeyCredential))
+        if (!token) {
+            enqueueSnackbar("Could not retrive a valid token", { variant: 'error' })
+            return
+        }
+
+        enqueueSnackbar("open sesame!", { variant: 'success' })
+        ctx.handleSignIn(token)
+    }
+
+    useEffect(() => {
+        return () => {
+            if (abortController)
+                abortController.abort("component unmount")
+        }
     }, [abortController])
 
     return (
@@ -183,6 +172,7 @@ export default function SignInSide() {
                             id="username-field"
                             autoComplete="username webauthn"
                             autoFocus
+                            onFocus={handleConditional}
                         />
                         <Button
                             type="submit"
