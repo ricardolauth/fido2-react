@@ -1,7 +1,7 @@
 import { useEffect, useState } from "react"
 import { ApiError, MeService, OpenAPI, User } from "../api"
 import { enqueueSnackbar } from "notistack"
-import { Box, Button, Card, CircularProgress, Grid, IconButton, Stack, Table, TableBody, TableCell, TableContainer, TableHead, TableRow, Typography } from "@mui/material"
+import { Box, Button, Card, Grid, IconButton, Table, TableBody, TableCell, TableContainer, TableHead, TableRow, Typography } from "@mui/material"
 import { AuthContext } from "./auth/AuthProvider"
 import React from "react"
 import DeleteIcon from '@mui/icons-material/Delete';
@@ -28,7 +28,7 @@ const Dashboard = () => {
     }
 
     const handleLogout = () => {
-        ctx.handleSignOut()
+        ctx.logout()
         navigate("/signin")
     }
 
@@ -45,9 +45,7 @@ const Dashboard = () => {
                 publicKey: parseCredentialCreattionOptions(credentialCreationOptions)
             });
         } catch (e) {
-            var msg = "Could not create credentials in browser. Probably because the username is already registered with your authenticator. Please change username or authenticator."
-            console.error(msg, e);
-            //showErrorAlert(msg, e);
+            console.error(e)
             enqueueSnackbar("Could not create credentials in browser.", { variant: 'error' })
         }
 
@@ -76,7 +74,7 @@ const Dashboard = () => {
             return
         }
 
-        ctx.handleSignOut()
+        ctx.logout()
         navigate('/signup')
     }
 
@@ -97,7 +95,7 @@ const Dashboard = () => {
     return (
         <>
             {!isLoading && user && (
-                <Grid container flexDirection='column' justifyContent='space-evenly' height='97vh'>
+                <Grid container flexDirection='column' justifyContent='space-evenly'>
                     <Grid container flexDirection='column' justifyContent='space-evenly' alignItems='flex-start' padding={4}>
                         <Grid item>
                             <Typography variant="h2">{`Hi, ${user.displayName}.`}</Typography>

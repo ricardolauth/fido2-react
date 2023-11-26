@@ -2,11 +2,11 @@ import { createContext, useState } from "react"
 
 type AuthContextType = {
     token: string | null
-    handleSignIn: (token: string) => void
-    handleSignOut: () => void
+    signIn: (token: string) => void
+    logout: () => void
 }
 
-export const AuthContext = createContext<AuthContextType>({ token: null, handleSignIn: () => { }, handleSignOut: () => { } })
+export const AuthContext = createContext<AuthContextType>({ token: null, signIn: () => { }, logout: () => { } })
 
 interface Props {
     children: React.ReactNode
@@ -19,12 +19,12 @@ export const AuthProvider = ({ children }: Props) => {
         setToken(token)
     }
 
-    const handleSignOut = () => {
+    const handleLogout = () => {
         setToken(null)
     }
 
     return (
-        <AuthContext.Provider value={{ token, handleSignIn, handleSignOut }}>
+        <AuthContext.Provider value={{ token, signIn: handleSignIn, logout: handleLogout }}>
             {children}
         </AuthContext.Provider>
     );

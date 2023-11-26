@@ -9,11 +9,13 @@ import Grid from '@mui/material/Grid';
 import LockOutlinedIcon from '@mui/icons-material/LockOutlined';
 import Typography from '@mui/material/Typography';
 import { AuthContext } from './auth/AuthProvider';
-import { makeCredentialOptions, parseCredentialCreattionOptions, registerNewCredential } from '../utils/register';
+import { makeCredentialOptions, parseAuthenticatorAttestationRawResponse, parseCredentialCreattionOptions, registerNewCredential } from '../utils/register';
 import { enqueueSnackbar } from 'notistack';
+import { DebugContext } from './DebugView';
 
 export default function SignUpSide() {
   const ctx = React.useContext(AuthContext)
+  const debug = React.useContext(DebugContext)
 
   async function handleRegisterSubmit(event: React.FormEvent<HTMLFormElement>) {
     event.preventDefault();
@@ -23,10 +25,31 @@ export default function SignUpSide() {
     const user = { displayName: data.get('name')?.toString(), username: data.get('username')?.toString() }
 
 
-    const credentialCreationOptions = await makeCredentialOptions(user)
+    let credentialCreationOptions = await makeCredentialOptions(user)
     if (!credentialCreationOptions) {
       return
     }
+
+
+    if (debug.isDebug) {
+      let fininish = false;
+      // do silly stuff to await user actions in debug view
+      async function wait() {
+        while (true) {
+          if (fininish) return
+          await new Promise(resolve => setTimeout(resolve, 100))
+        }
+      }
+
+      debug.setValue(credentialCreationOptions)
+      debug.setOnContinue((val: any) => {
+        fininish = true
+        credentialCreationOptions = val
+      })
+
+      await wait()
+    }
+
 
     let newCredential;
     try {
@@ -40,10 +63,35 @@ export default function SignUpSide() {
       enqueueSnackbar("Could not create credentials in browser.", { variant: 'error' })
     }
 
-    const token = await registerNewCredential(newCredential as PublicKeyCredential);
+    let parsedResponse = parseAuthenticatorAttestationRawResponse(newCredential as PublicKeyCredential)
+
+    if (debug.isDebug) {
+      let fininish = false;
+      // do silly stuff to await user actions in debug view
+      async function wait() {
+        while (true) {
+          if (fininish) return
+          await new Promise(resolve => setTimeout(resolve, 500))
+        }
+      }
+
+      debug.setValue(parsedResponse)
+      debug.setOnContinue((val: any) => {
+        fininish = true
+        parsedResponse = val
+      })
+
+      await wait()
+    }
+
+    debug.setValue({})
+    debug.setOnContinue(undefined)
+    debug.setIsDebug(false)
+
+    const token = await registerNewCredential(parsedResponse);
     if (token !== undefined && token !== null && token.length > 0) {
       enqueueSnackbar(`Public-Key-Credential created.`, { variant: 'success' })
-      ctx.handleSignIn(token)
+      ctx.signIn(token)
     }
   }
 

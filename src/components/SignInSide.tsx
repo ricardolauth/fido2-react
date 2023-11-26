@@ -13,25 +13,13 @@ import { isConditionalMediationAvailable } from '../utils/helpers';
 import { getAssertionOptions, parseAssertionOptions, parseAssertionResponse, postAssertedCredential } from '../utils/login';
 import { useEffect, useState } from 'react';
 import { enqueueSnackbar } from 'notistack';
-
-function Copyright(props: any) {
-    return (
-        <Typography variant="body2" color="text.secondary" align="center" {...props}>
-            {'Copyright © '}
-            <Link color="inherit" href="https://mui.com/">
-                Your Website
-            </Link>{' '}
-            {new Date().getFullYear()}
-            {'.'}
-        </Typography>
-    );
-}
+import { DebugContext } from './DebugView';
 
 export default function SignInSide() {
     // if the user don't want to use the conditional approach, we use this controller to abort the webauthn api call
     const [abortController, setAbortController] = useState<AbortController | undefined>()
-    const [isOngoing, setIsOnGoing] = useState(false)
     const ctx = React.useContext(AuthContext)
+    const debug = React.useContext(DebugContext)
 
     const handleSubmit = async (event: React.FormEvent<HTMLFormElement>) => {
         event.preventDefault();
@@ -42,6 +30,7 @@ export default function SignInSide() {
 
         try {
             const username: string | undefined = data.get('username')?.toString()
+            console.log("submit")
             let requestOptions = await getAssertionOptions(username);
 
             if (!requestOptions) {
@@ -71,9 +60,7 @@ export default function SignInSide() {
             }
 
             enqueueSnackbar("open sesame!", { variant: 'success' })
-            ctx.handleSignIn(token)
-
-
+            ctx.signIn(token)
         } catch (error) {
             console.error(error);
         }
@@ -87,6 +74,7 @@ export default function SignInSide() {
 
         if (abortController) return
 
+        console.log("conditional")
         const requestOptions = await getAssertionOptions()
         if (!requestOptions) {
             return
@@ -102,8 +90,6 @@ export default function SignInSide() {
                 mediation: "conditional",
                 signal: controller.signal
             });
-        } catch {
-            handleConditional()
         } finally {
             setAbortController(undefined)
         }
@@ -115,12 +101,11 @@ export default function SignInSide() {
 
         const token = await postAssertedCredential(parseAssertionResponse(credential as PublicKeyCredential))
         if (!token) {
-            handleConditional()
             return
         }
 
         enqueueSnackbar("open sesame!", { variant: 'success' })
-        ctx.handleSignIn(token)
+        ctx.signIn(token)
     }
 
     useEffect(() => {

@@ -1,5 +1,5 @@
 ﻿import { enqueueSnackbar } from "notistack";
-import { ApiError, AuthService, CredentialCreateOptions, PublicKeyCredentialType, User } from "../api";
+import { ApiError, AuthService, AuthenticatorAssertionRawResponse, AuthenticatorAttestationRawResponse, CredentialCreateOptions, PublicKeyCredentialType, User } from "../api";
 import { coerceToArrayBuffer, coerceToBase64Url } from "./helpers";
 
 export const makeCredentialOptions = async (user?: Pick<User, 'username' | 'displayName'>) => {
@@ -33,8 +33,7 @@ export const parseCredentialCreattionOptions = (options: CredentialCreateOptions
     return data
 }
 
-// This should be used to verify the auth data with the server
-export async function registerNewCredential(newCredential: PublicKeyCredential) {
+export const parseAuthenticatorAttestationRawResponse = (newCredential: PublicKeyCredential) => {
     // Move data into Arrays incase it is super long
     const attestationResponse = newCredential.response as AuthenticatorAttestationResponse
     let attestationObject = new Uint8Array(attestationResponse.attestationObject);
@@ -52,6 +51,11 @@ export async function registerNewCredential(newCredential: PublicKeyCredential) 
         }
     };
 
+    return data
+}
+
+// This should be used to verify the auth data with the server
+export async function registerNewCredential(data: AuthenticatorAttestationRawResponse) {
     let response;
     try {
         response = await AuthService.createCredential(data)
