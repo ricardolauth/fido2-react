@@ -1,18 +1,14 @@
-import { Box, Divider, Grid, IconButton, Paper, Stack, Typography } from "@mui/material"
+import { Button, Divider, Grid, IconButton, Paper, Typography } from "@mui/material"
 import CloseIcon from '@mui/icons-material/Close';
 import React, { useEffect, useRef, useState } from "react";
 import ArrowRightIcon from '@mui/icons-material/ArrowRight';
-//import '../darktheme.css'
-import { JsonEditor } from "jsoneditor-react18";
-import { JsonView, allExpanded, collapseAllNested, darkStyles } from "react-json-view-lite";
-import { useTheme } from "@emotion/react";
 import { JSONTree } from "react-json-tree";
 import './json.css'
 
 type func = (value: any) => void
 type callbackFunc = () => void
 
-type DebugContextType = {
+export type DebugContextType = {
     value: any
     setValue: func
     setOnContinue: (callback: callbackFunc | undefined) => void
@@ -60,9 +56,9 @@ export const DebugDrawer = ({ context }: DrawerProps) => {
         <Grid container width='max-content' height='max-content' overflow='hidden'>
             <Grid item flexDirection='row' justifyContent='space-between' px={2} py={1} width='100vw' height='fit-content'>
                 {context.onContinue !== undefined && (
-                    <IconButton onClick={() => context.onContinue!()}>
-                        <ArrowRightIcon fontSize="large" />
-                    </IconButton>
+                    <Button onClick={() => context.onContinue!()} startIcon={<ArrowRightIcon fontSize="large" />}>
+                        Continue
+                    </Button>
                 )}
                 {context.onContinue === undefined && (
                     <Typography variant="body1">Info: Start authentication/registration</Typography>
