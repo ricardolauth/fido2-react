@@ -1,7 +1,7 @@
 import { useEffect, useState } from "react"
 import { ApiError, MeService, OpenAPI, User } from "../api"
 import { enqueueSnackbar } from "notistack"
-import { Box, Button, Card, CircularProgress, Divider, IconButton, Stack, Table, TableBody, TableCell, TableContainer, TableHead, TableRow, Typography } from "@mui/material"
+import { Box, Button, Card, CircularProgress, IconButton, Stack, Table, TableBody, TableCell, TableContainer, TableHead, TableRow, Typography } from "@mui/material"
 import { AuthContext } from "./auth/AuthProvider"
 import React from "react"
 import DeleteIcon from '@mui/icons-material/Delete';
@@ -96,15 +96,10 @@ const Dashboard = () => {
 
     return (
         <>
-            {isLoading && (
-                <Box sx={{ display: 'flex' }}>
-                    <CircularProgress />
-                </Box>)}
             {!isLoading && user && (
-
-                <Stack flexDirection='column' justifyContent='space-between' padding={4} width='100vw' height='100vh'>
+                <Stack flexDirection='column' justifyContent='space-between' padding={4} alignContent='center'>
                     <Typography variant="h2">{`Hi, ${user.displayName}.`}</Typography>
-                    <Stack flexDirection='column' justifyContent='space-evenly' gap={4}>
+                    <Stack flexDirection='column' justifyContent='space-between' gap={4}>
                         <Typography variant="h5">{`We have saved these passkeys for your account ${user.username}:`}</Typography>
                         <TableContainer component={Card}>
                             <Table sx={{ minWidth: 650 }} aria-label="simple table">

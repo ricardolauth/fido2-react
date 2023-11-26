@@ -102,6 +102,8 @@ export default function SignInSide() {
                 mediation: "conditional",
                 signal: controller.signal
             });
+        } catch {
+            handleConditional()
         } finally {
             setAbortController(undefined)
         }
@@ -113,7 +115,7 @@ export default function SignInSide() {
 
         const token = await postAssertedCredential(parseAssertionResponse(credential as PublicKeyCredential))
         if (!token) {
-            enqueueSnackbar("Could not retrive a valid token", { variant: 'error' })
+            handleConditional()
             return
         }
 
@@ -159,7 +161,7 @@ export default function SignInSide() {
                         <LockOutlinedIcon />
                     </Avatar>
                     <Typography component="h1" variant="h5">
-                        Sign up
+                        Sign in
                     </Typography>
                     <Box component="form" noValidate onSubmit={handleSubmit} sx={{ mt: 1 }}>
                         <TextField
@@ -184,12 +186,18 @@ export default function SignInSide() {
                         </Button>
                         <Grid container>
                             <Grid item>
-                                <Link href="#" variant="body2">
+                                <Link href="/signup" variant="body2">
                                     {"Don't have an account? Sign up"}
                                 </Link>
                             </Grid>
                         </Grid>
-                        <Copyright sx={{ mt: 5 }} />
+                        <Grid container>
+                            <Grid item>
+                                <Link variant="body2" target='blank' href="https://github.com/ricardolauth">
+                                    {"github.com/ricardolauth"}
+                                </Link>
+                            </Grid>
+                        </Grid>
                     </Box>
                 </Box>
             </Grid>

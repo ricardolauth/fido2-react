@@ -12,19 +12,6 @@ import { AuthContext } from './auth/AuthProvider';
 import { makeCredentialOptions, parseCredentialCreattionOptions, registerNewCredential } from '../utils/register';
 import { enqueueSnackbar } from 'notistack';
 
-function Copyright(props: any) {
-  return (
-    <Typography variant="body2" color="text.secondary" align="center" {...props}>
-      {'Copyright © '}
-      <Link color="inherit" href="https://mui.com/">
-        Your Website
-      </Link>{' '}
-      {new Date().getFullYear()}
-      {'.'}
-    </Typography>
-  );
-}
-
 export default function SignUpSide() {
   const ctx = React.useContext(AuthContext)
 
@@ -122,12 +109,18 @@ export default function SignUpSide() {
             </Button>
             <Grid container>
               <Grid item>
-                <Link href="#" variant="body2">
+                <Link href="/signin" variant="body2">
                   {"Have an account? Sign in"}
                 </Link>
               </Grid>
             </Grid>
-            <Copyright sx={{ mt: 5 }} />
+            <Grid container>
+              <Grid item>
+                <Link variant="body2" target='blank' href="https://github.com/ricardolauth">
+                  {"github.com/ricardolauth"}
+                </Link>
+              </Grid>
+            </Grid>
           </Box>
         </Box>
       </Grid>

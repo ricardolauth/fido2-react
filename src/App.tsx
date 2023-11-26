@@ -53,9 +53,16 @@ function App() {
     {
       path: "/dashboard",
       element:
-        <Authorized>
-          <Dashboard />
-        </Authorized>,
+        <>
+          <Unauthorized>
+            <Navigate to='/signin' />
+          </Unauthorized>
+          <Authorized>
+            <Dashboard />
+          </Authorized>,
+
+        </>
+
     },
   ]);
 
