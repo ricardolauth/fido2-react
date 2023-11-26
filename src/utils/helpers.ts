@@ -95,10 +95,10 @@ export type PickNotNullable<T> = {
     [P in keyof T as null extends T[P] ? never : P]: T[P]
 }
 
-export const debugWaitUntilContinue = async (debug: DebugContextType) => {
+export const debugSleepUntilContinue = async (debug: DebugContextType) => {
     let fininish = false;
     // do silly stuff to await user actions in debug view
-    async function wait() {
+    async function sleep() {
         while (true) {
             if (fininish) return
             await new Promise(resolve => setTimeout(resolve, 100))
@@ -109,5 +109,6 @@ export const debugWaitUntilContinue = async (debug: DebugContextType) => {
         fininish = true
     })
 
-    await wait()
+    await sleep()
+    debug.setOnContinue(undefined)
 }

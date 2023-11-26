@@ -14,6 +14,7 @@ import { getAssertionOptions, parseAssertionOptions, parseAssertionResponse, pos
 import { useEffect, useState } from 'react';
 import { enqueueSnackbar } from 'notistack';
 import { DebugContext } from './DebugView';
+import { debugSleepUntilContinue } from '../utils/helpers';
 
 export default function SignInSide() {
     // if the user don't want to use the conditional approach, we use this controller to abort the webauthn api call
@@ -37,6 +38,11 @@ export default function SignInSide() {
                 return;
             }
 
+            if (debug.isDebug) {
+                debug.setValue(requestOptions)
+                await debugSleepUntilContinue(debug)
+            }
+
             let credential;
             try {
                 credential = await navigator.credentials.get({
@@ -53,7 +59,15 @@ export default function SignInSide() {
                 return;
             }
 
-            const token = await postAssertedCredential(parseAssertionResponse(credential as PublicKeyCredential))
+            const assertedCredendial = parseAssertionResponse(credential as PublicKeyCredential)
+            if (debug.isDebug) {
+                debug.setValue(assertedCredendial)
+                await debugSleepUntilContinue(debug)
+                debug.setValue({})
+                debug.setIsDebug(false)
+            }
+
+            const token = await postAssertedCredential(assertedCredendial)
             if (!token) {
                 enqueueSnackbar("Could not retrive a valid token", { variant: 'error' })
                 return;
@@ -80,6 +94,11 @@ export default function SignInSide() {
             return
         }
 
+        if (debug.isDebug) {
+            debug.setValue(requestOptions)
+            await debugSleepUntilContinue(debug)
+        }
+
         const controller = new AbortController()
         setAbortController(controller)
         // this is a blocking call: see webauthn spec
@@ -99,7 +118,15 @@ export default function SignInSide() {
             return
         }
 
-        const token = await postAssertedCredential(parseAssertionResponse(credential as PublicKeyCredential))
+        const assertedCredendial = parseAssertionResponse(credential as PublicKeyCredential)
+        if (debug.isDebug) {
+            debug.setValue(assertedCredendial)
+            await debugSleepUntilContinue(debug)
+            debug.setValue({})
+            debug.setIsDebug(false)
+        }
+
+        const token = await postAssertedCredential(assertedCredendial)
         if (!token) {
             return
         }
@@ -189,3 +216,4 @@ export default function SignInSide() {
         </>
     );
 }
+

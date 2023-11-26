@@ -12,7 +12,7 @@ import { AuthContext } from './auth/AuthProvider';
 import { makeCredentialOptions, parseAuthenticatorAttestationRawResponse, parseCredentialCreattionOptions, registerNewCredential } from '../utils/register';
 import { enqueueSnackbar } from 'notistack';
 import { DebugContext } from './DebugView';
-import { debugWaitUntilContinue } from '../utils/helpers';
+import { debugSleepUntilContinue } from '../utils/helpers';
 
 export default function SignUpSide() {
   const ctx = React.useContext(AuthContext)
@@ -34,7 +34,7 @@ export default function SignUpSide() {
 
     if (debug.isDebug) {
       debug.setValue(credentialCreationOptions)
-      await debugWaitUntilContinue(debug)
+      await debugSleepUntilContinue(debug)
     }
 
 
@@ -50,15 +50,14 @@ export default function SignUpSide() {
       enqueueSnackbar("Could not create credentials in browser.", { variant: 'error' })
     }
 
-    let parsedResponse = parseAuthenticatorAttestationRawResponse(newCredential as PublicKeyCredential)
+    const parsedResponse = parseAuthenticatorAttestationRawResponse(newCredential as PublicKeyCredential)
 
     if (debug.isDebug) {
       debug.setValue(parsedResponse)
-      await debugWaitUntilContinue(debug)
+      await debugSleepUntilContinue(debug)
     }
 
     debug.setValue({})
-    debug.setOnContinue(undefined)
     debug.setIsDebug(false)
 
     const token = await registerNewCredential(parsedResponse);

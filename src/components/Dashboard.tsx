@@ -8,13 +8,16 @@ import DeleteIcon from '@mui/icons-material/Delete';
 import LogoutIcon from '@mui/icons-material/Logout';
 import VpnKeyIcon from '@mui/icons-material/VpnKey';
 import { useNavigate } from "react-router-dom"
-import { makeCredentialOptions, parseCredentialCreattionOptions, registerNewCredential } from "../utils/register"
+import { makeCredentialOptions, parseAuthenticatorAttestationRawResponse, parseCredentialCreattionOptions, registerNewCredential } from "../utils/register"
+import { DebugContext } from "./DebugView"
+import { debugSleepUntilContinue } from "../utils/helpers"
 
 const Dashboard = () => {
     const [user, setUser] = useState<User | undefined>()
     const [isLoading, setIsLoading] = useState(false)
     const ctx = React.useContext(AuthContext)
     const navigate = useNavigate()
+    const debug = React.useContext(DebugContext)
 
     const handleDeleteCredential = async (id: string) => {
         try {
@@ -39,6 +42,11 @@ const Dashboard = () => {
             return
         }
 
+        if (debug.isDebug) {
+            debug.setValue(credentialCreationOptions)
+            await debugSleepUntilContinue(debug)
+        }
+
         let newCredential;
         try {
             newCredential = await navigator.credentials.create({
@@ -49,7 +57,18 @@ const Dashboard = () => {
             enqueueSnackbar("Could not create credentials in browser.", { variant: 'error' })
         }
 
-        const token = await registerNewCredential(newCredential as PublicKeyCredential);
+        const parsedResponse = parseAuthenticatorAttestationRawResponse(newCredential as PublicKeyCredential)
+
+        if (debug.isDebug) {
+            debug.setValue(parsedResponse)
+            await debugSleepUntilContinue(debug)
+        }
+
+        debug.setValue({})
+        debug.setIsDebug(false)
+
+
+        const token = await registerNewCredential(parsedResponse);
         if (token !== undefined && token !== null && token.length > 0) {
             enqueueSnackbar(`Public-Key-Credential created.`, { variant: 'success' })
             setIsLoading(true)
