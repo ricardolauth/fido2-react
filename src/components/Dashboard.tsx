@@ -1,7 +1,7 @@
 import { useEffect, useState } from "react"
 import { ApiError, MeService, OpenAPI, User } from "../api"
 import { enqueueSnackbar } from "notistack"
-import { Box, Button, Card, CircularProgress, IconButton, Stack, Table, TableBody, TableCell, TableContainer, TableHead, TableRow, Typography } from "@mui/material"
+import { Box, Button, Card, CircularProgress, Grid, IconButton, Stack, Table, TableBody, TableCell, TableContainer, TableHead, TableRow, Typography } from "@mui/material"
 import { AuthContext } from "./auth/AuthProvider"
 import React from "react"
 import DeleteIcon from '@mui/icons-material/Delete';
@@ -97,11 +97,17 @@ const Dashboard = () => {
     return (
         <>
             {!isLoading && user && (
-                <Stack flexDirection='column' justifyContent='space-between' padding={4} alignContent='center'>
-                    <Typography variant="h2">{`Hi, ${user.displayName}.`}</Typography>
-                    <Stack flexDirection='column' justifyContent='space-between' gap={4}>
-                        <Typography variant="h5">{`We have saved these passkeys for your account ${user.username}:`}</Typography>
-                        <TableContainer component={Card}>
+                <Grid container flexDirection='column' justifyContent='space-evenly' height='97vh'>
+                    <Grid container flexDirection='column' justifyContent='space-evenly' alignItems='flex-start' padding={4}>
+                        <Grid item>
+                            <Typography variant="h2">{`Hi, ${user.displayName}.`}</Typography>
+                        </Grid>
+                        <Grid item>
+                            <Typography variant="h5">{`We have saved these passkeys for your account ${user.username}:`}</Typography>
+                        </Grid>
+                    </Grid>
+                    <Grid item justifyContent='flex-start' alignSelf='center'>
+                        <TableContainer component={Card} sx={{ width: 'fit-content' }}>
                             <Table sx={{ minWidth: 650 }} aria-label="simple table">
                                 <TableHead>
                                     <TableRow>
@@ -147,19 +153,25 @@ const Dashboard = () => {
                                 </TableBody>
                             </Table>
                         </TableContainer>
-                    </Stack>
-                    <Stack flexDirection='row' justifyContent='flex-end' gap={2}>
-                        <Button startIcon={<DeleteIcon />} color="error" onClick={handleDeleteAccount}>
-                            Account
-                        </Button>
-                        <Button startIcon={<VpnKeyIcon />} onClick={handleAddPasskey}>
-                            Add Passkey
-                        </Button>
-                        <Button startIcon={<LogoutIcon />} onClick={handleLogout}>
-                            Logout
-                        </Button>
-                    </Stack>
-                </Stack >
+                    </Grid>
+                    <Grid container gap={2} justifyContent='flex-end' padding={2}>
+                        <Grid item>
+                            <Button startIcon={<DeleteIcon />} color="error" onClick={handleDeleteAccount}>
+                                Account
+                            </Button>
+                        </Grid>
+                        <Grid item>
+                            <Button startIcon={<VpnKeyIcon />} onClick={handleAddPasskey}>
+                                Add Passkey
+                            </Button>
+                        </Grid>
+                        <Grid item>
+                            <Button startIcon={<LogoutIcon />} onClick={handleLogout}>
+                                Logout
+                            </Button>
+                        </Grid>
+                    </Grid>
+                </Grid>
             )}
         </>
     )
