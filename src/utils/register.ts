@@ -1,5 +1,5 @@
 ﻿import { enqueueSnackbar } from "notistack";
-import { ApiError, AuthService, AuthenticatorAssertionRawResponse, AuthenticatorAttestationRawResponse, CredentialCreateOptions, PublicKeyCredentialType, User } from "../api";
+import { ApiError, AuthService, AuthenticatorAttestationRawResponse, CredentialCreateOptions, PublicKeyCredentialType, User } from "../api";
 import { coerceToArrayBuffer, coerceToBase64Url } from "./helpers";
 
 export const makeCredentialOptions = async (user?: Pick<User, 'username' | 'displayName'>) => {

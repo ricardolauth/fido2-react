@@ -5,7 +5,9 @@ import './index.css'
 
 import { OpenAPI } from './api';
 
-OpenAPI.BASE = 'https://localhost:7267'
+OpenAPI.BASE = import.meta.env.VITE_BACKEND
+
+
 
 ReactDOM.createRoot(document.getElementById('root')!).render(
   <React.StrictMode>

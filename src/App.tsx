@@ -88,7 +88,6 @@ function App() {
       });
   }, []);
 
-
   return (
     <>
       <ThemeProvider theme={mode == 'dark' ? darkTheme : lightTheme}>

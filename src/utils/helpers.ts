@@ -65,22 +65,6 @@ export const coerceToBase64Url = (thing: any): string => {
     return thing;
 };
 
-
-
-// HELPERS
-function detectFIDOSupport() {
-    if (window.PublicKeyCredential === undefined ||
-        typeof window.PublicKeyCredential !== "function") {
-        //$('#register-button').attr("disabled", true);
-        //$('#login-button').attr("disabled", true);
-        var el = document.getElementById("notSupportedWarning");
-        if (el) {
-            el.style.display = 'block';
-        }
-        return;
-    }
-}
-
 export const isConditionalMediationAvailable = async () => {
     if (window.PublicKeyCredential &&
         PublicKeyCredential.isConditionalMediationAvailable) {
