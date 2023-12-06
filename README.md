@@ -5,11 +5,11 @@ It uses a ASP.NET Core Backend as Relying Party Server.
 The SPA implements an experimental debugger that allows the user to see whats going on.
 ## Recommandations
 That every feature in this demo work the following requirements should met:
-- >= iOS 16
-- >= Android 9
-- >= Windows 22H2
-- >= macOS Ventura (V13)
+- greater or equal iOS 16
+- greater or equal  Android 9
+- greater or equal  Windows 22H2
+- greater or equal  macOS Ventura (V13)
 For autofill:
-  - chrome
-  - safari
+- chrome
+- safari
 
