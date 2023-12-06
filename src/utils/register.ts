@@ -8,7 +8,7 @@ export const makeCredentialOptions = async (user?: Pick<User, 'username' | 'disp
         makeCredentialOptions = await AuthService.createPublicKeyCredentialCreationOptions(user)
     } catch (e) {
         const error = e as ApiError
-        enqueueSnackbar(`API: ${error.url} throws ${error.message}`, { variant: 'error' })
+        enqueueSnackbar(`API ERROR: ${error.message}, because: ${error.body}`, { variant: 'error' })
         return;
     }
 
@@ -61,7 +61,7 @@ export async function registerNewCredential(data: AuthenticatorAttestationRawRes
         response = await AuthService.createCredential(data)
     } catch (e) {
         const error = e as ApiError
-        enqueueSnackbar(`API: ${error.url} returns ${error.message}`, { variant: 'error' })
+        enqueueSnackbar(`API ERROR: ${error.message}, because: ${error.body}`, { variant: 'error' })
     }
 
     return response

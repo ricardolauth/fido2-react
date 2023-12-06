@@ -12,11 +12,15 @@ import { AuthContext } from './auth/AuthProvider';
 import { makeCredentialOptions, parseAuthenticatorAttestationRawResponse, parseCredentialCreattionOptions, registerNewCredential } from '../utils/register';
 import { enqueueSnackbar } from 'notistack';
 import { DebugContext } from './DebugView';
-import { debugSleepUntilContinue } from '../utils/helpers';
+import { useEffect } from 'react';
 
 export default function SignUpSide() {
   const ctx = React.useContext(AuthContext)
   const debug = React.useContext(DebugContext)
+
+  useEffect(() => {
+    debug.setValue({ data: {}, name: 'fill out registration form and submit to begin debugging' })
+  }, [])
 
   async function handleRegisterSubmit(event: React.FormEvent<HTMLFormElement>) {
     event.preventDefault();
@@ -26,6 +30,11 @@ export default function SignUpSide() {
     const user = { displayName: data.get('name')?.toString(), username: data.get('username')?.toString() }
 
 
+    if (debug.isDebug) {
+      debug.setValue({ data: user, name: 'User' })
+      await debug.waitUntilResume()
+    }
+
     let credentialCreationOptions = await makeCredentialOptions(user)
     if (!credentialCreationOptions) {
       return
@@ -33,8 +42,8 @@ export default function SignUpSide() {
 
 
     if (debug.isDebug) {
-      debug.setValue(credentialCreationOptions)
-      await debugSleepUntilContinue(debug)
+      debug.setValue({ data: credentialCreationOptions, name: 'credentialCreationOptions' })
+      await debug.waitUntilResume()
     }
 
 
@@ -53,11 +62,11 @@ export default function SignUpSide() {
     const parsedResponse = parseAuthenticatorAttestationRawResponse(newCredential as PublicKeyCredential)
 
     if (debug.isDebug) {
-      debug.setValue(parsedResponse)
-      await debugSleepUntilContinue(debug)
+      debug.setValue({ data: parsedResponse, name: 'AuthenticatorAttestationResponse' })
+      await debug.waitUntilResume()
     }
 
-    debug.setValue({})
+    debug.setValue({ data: {}, name: 'register a new credential to continue' })
     debug.setIsDebug(false)
 
     const token = await registerNewCredential(parsedResponse);

@@ -10,7 +10,6 @@ import VpnKeyIcon from '@mui/icons-material/VpnKey';
 import { useNavigate } from "react-router-dom"
 import { makeCredentialOptions, parseAuthenticatorAttestationRawResponse, parseCredentialCreattionOptions, registerNewCredential } from "../utils/register"
 import { DebugContext } from "./DebugView"
-import { debugSleepUntilContinue } from "../utils/helpers"
 
 const Dashboard = () => {
     const [user, setUser] = useState<User | undefined>()
@@ -18,6 +17,10 @@ const Dashboard = () => {
     const ctx = React.useContext(AuthContext)
     const navigate = useNavigate()
     const debug = React.useContext(DebugContext)
+
+    useEffect(() => {
+        debug.setValue({ data: {}, name: 'click on add passkey to start debugging' })
+    }, [])
 
     const handleDeleteCredential = async (id: string) => {
         try {
@@ -37,14 +40,19 @@ const Dashboard = () => {
 
     async function handleAddPasskey() {
         // send to server for registering
+        if (debug.isDebug) {
+            debug.setValue({ data: user!, name: 'User' })
+            await debug.waitUntilResume()
+        }
+
         const credentialCreationOptions = await makeCredentialOptions(user)
         if (!credentialCreationOptions) {
             return
         }
 
         if (debug.isDebug) {
-            debug.setValue(credentialCreationOptions)
-            await debugSleepUntilContinue(debug)
+            debug.setValue({ data: credentialCreationOptions, name: 'CredentialCreationOptions' })
+            await debug.waitUntilResume()
         }
 
         let newCredential;
@@ -60,17 +68,14 @@ const Dashboard = () => {
         const parsedResponse = parseAuthenticatorAttestationRawResponse(newCredential as PublicKeyCredential)
 
         if (debug.isDebug) {
-            debug.setValue(parsedResponse)
-            await debugSleepUntilContinue(debug)
+            debug.setValue({ data: parsedResponse, name: 'AuthenticatorAttestationRawResponse' })
+            await debug.waitUntilResume()
         }
-
-        debug.setValue({})
-        debug.setIsDebug(false)
-
 
         const token = await registerNewCredential(parsedResponse);
         if (token !== undefined && token !== null && token.length > 0) {
             enqueueSnackbar(`Public-Key-Credential created.`, { variant: 'success' })
+            debug.setValue({ data: {}, name: 'click on add passkey to start debugging' })
             setIsLoading(true)
             OpenAPI.TOKEN = ctx.token ?? undefined
             MeService.meAsync()

@@ -1,6 +1,4 @@
-﻿import { DebugContextType } from "../components/DebugView";
-
-export const coerceToArrayBuffer = (thing: any, name: string) => {
+﻿export const coerceToArrayBuffer = (thing: any, name: string) => {
     if (typeof thing === "string") {
         // base64url to base64
         thing = thing.replace(/-/g, "+").replace(/_/g, "/");
@@ -77,22 +75,4 @@ export const isConditionalMediationAvailable = async () => {
 
 export type PickNotNullable<T> = {
     [P in keyof T as null extends T[P] ? never : P]: T[P]
-}
-
-export const debugSleepUntilContinue = async (debug: DebugContextType) => {
-    let fininish = false;
-    // do silly stuff to await user actions in debug view
-    async function sleep() {
-        while (true) {
-            if (fininish) return
-            await new Promise(resolve => setTimeout(resolve, 100))
-        }
-    }
-
-    debug.setOnContinue(() => {
-        fininish = true
-    })
-
-    await sleep()
-    debug.setOnContinue(undefined)
 }

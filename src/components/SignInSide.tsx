@@ -14,13 +14,16 @@ import { getAssertionOptions, parseAssertionOptions, parseAssertionResponse, pos
 import { useEffect, useState } from 'react';
 import { enqueueSnackbar } from 'notistack';
 import { DebugContext } from './DebugView';
-import { debugSleepUntilContinue } from '../utils/helpers';
 
 export default function SignInSide() {
     // if the user don't want to use the conditional approach, we use this controller to abort the webauthn api call
     const [abortController, setAbortController] = useState<AbortController | undefined>()
     const ctx = React.useContext(AuthContext)
     const debug = React.useContext(DebugContext)
+
+    useEffect(() => {
+        debug.setValue({ data: {}, name: 'click on sign in to begin debugging' })
+    }, [])
 
     const handleSubmit = async (event: React.FormEvent<HTMLFormElement>) => {
         event.preventDefault();
@@ -39,8 +42,8 @@ export default function SignInSide() {
             }
 
             if (debug.isDebug) {
-                debug.setValue(requestOptions)
-                await debugSleepUntilContinue(debug)
+                debug.setValue({ data: requestOptions, name: 'AssertionOptions' })
+                await debug.waitUntilResume()
             }
 
             let credential;
@@ -61,9 +64,9 @@ export default function SignInSide() {
 
             const assertedCredendial = parseAssertionResponse(credential as PublicKeyCredential)
             if (debug.isDebug) {
-                debug.setValue(assertedCredendial)
-                await debugSleepUntilContinue(debug)
-                debug.setValue({})
+                debug.setValue({ data: assertedCredendial, name: 'AuthenticatorAssertionResponse' })
+                await debug.waitUntilResume()
+                debug.setValue({ data: {}, name: 'register a new credention to continue' })
                 debug.setIsDebug(false)
             }
 
@@ -94,11 +97,6 @@ export default function SignInSide() {
             return
         }
 
-        if (debug.isDebug) {
-            debug.setValue(requestOptions)
-            await debugSleepUntilContinue(debug)
-        }
-
         const controller = new AbortController()
         setAbortController(controller)
         // this is a blocking call: see webauthn spec
@@ -119,12 +117,6 @@ export default function SignInSide() {
         }
 
         const assertedCredendial = parseAssertionResponse(credential as PublicKeyCredential)
-        if (debug.isDebug) {
-            debug.setValue(assertedCredendial)
-            await debugSleepUntilContinue(debug)
-            debug.setValue({})
-            debug.setIsDebug(false)
-        }
 
         const token = await postAssertedCredential(assertedCredendial)
         if (!token) {

@@ -9,7 +9,7 @@ export const getAssertionOptions = async (username?: string) => {
         makeAssertionOptions = await AuthService.getApiAuthAssertionOptions(username)
     } catch (e) {
         const error = e as ApiError
-        enqueueSnackbar(`API: ${error.url} throws ${error.message}`, { variant: 'error' })
+        enqueueSnackbar(`API ERROR: ${error.message}, because: ${error.body}`, { variant: 'error' })
         return;
     }
 
@@ -70,7 +70,7 @@ export const postAssertedCredential = async (assertionRawResponse: Authenticator
         token = await AuthService.postApiAuthAssertion(assertionRawResponse)
     } catch (e) {
         const error = e as ApiError
-        enqueueSnackbar(`API: ${error.url} returns ${error.message}`, { variant: 'error' })
+        enqueueSnackbar(`API ERROR: ${error.message}, because: ${error.body}`, { variant: 'error' })
         return;
     }
 
