@@ -10,6 +10,7 @@ import VpnKeyIcon from '@mui/icons-material/VpnKey';
 import { useNavigate } from "react-router-dom"
 import { makeCredentialOptions, parseAuthenticatorAttestationRawResponse, parseCredentialCreattionOptions, registerNewCredential } from "../utils/register"
 import { DebugContext } from "./DebugView"
+import { coerceToBase64Url } from "../utils/helpers"
 
 const Dashboard = () => {
     const [user, setUser] = useState<User | undefined>()
@@ -24,7 +25,7 @@ const Dashboard = () => {
 
     const handleDeleteCredential = async (id: string) => {
         try {
-            await MeService.deleteMyCredentialAsync(encodeURIComponent(id))
+            await MeService.deleteMyCredentialAsync(coerceToBase64Url(id))
         } catch (e) {
             const error = e as ApiError
             enqueueSnackbar(error.message, { variant: 'error' })
